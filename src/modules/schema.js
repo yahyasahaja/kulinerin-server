@@ -4,8 +4,25 @@ import gql from 'graphql-tag'
 import resolvers from './resolvers'
 
 const typeDefs = gql`
+  #SCALAR
   scalar Upload
+  scalar Date
 
+  #ENUM
+  enum Status {
+    UNPAID
+    PAID
+    PROGRESS
+    COMPLETED
+    EXPIRED
+  }
+
+  enum ShippingCourier {
+    JNE
+    GRAB
+  }
+
+  #TYPE
   type Buyer {
     id: ID!
     name: String!
@@ -22,19 +39,12 @@ const typeDefs = gql`
     address: String
   }
 
-  enum Status {
-    PENDING
-    SHIPPING
-    COMPLETED
-    EXPIRED
-  }
-
   type Cart {
     id: ID!
-    items: [TransactionItem!]!
+    items: [OrderItem!]!
   }
 
-  type TransactionItem {
+  type OrderItem {
     id: ID!
     product: Product!
   }
@@ -60,15 +70,16 @@ const typeDefs = gql`
     zip_code: String!
   }
 
-  type Transaction {
+  type Order {
     id: ID!
     uuid: String!
     total_price: Int!
     status: Status!
     address: ShippingAddress!
+    shipping_courier: ShippingCourier!
     buyer: Buyer!
     seller: Seller!
-    items: [TransactionItem!]!
+    items: [OrderItem!]!
   }
 
   type File {
@@ -101,16 +112,38 @@ const typeDefs = gql`
     address: String
   }
 
+  input RegisterBuyerInput {
+    name: String!
+    email: String!
+    password: String!
+    profile_picture_url: Int
+  }
+
+  input RegisterSellerInput {
+    name: String!
+    email: String!
+    password: String!
+    address: String!
+    profile_picture_url: Int
+  }
+
+  input ShippingAddressInput {
+    address: String!
+    phont_number: String!
+    recipient_name: String!
+    zip_code: String!
+  }
+
   type Query {
     #BUYER
     "get buyer by id or using buyer token"
     buyer(id: ID): Buyer
 
-    "get buyer's transaction list. buyer token required"
-    buyerTransactions: [Transactions]
+    "get buyer's order list. buyer token required"
+    buyerOrders: [Order]
 
-    "get a buyer's transaction using id. buyer token required"
-    buyerTransaction(id: ID!): [Transactions]
+    "get a buyer's order using id. buyer token required"
+    buyerOrder(id: ID!): [Order]
 
     "get buyer's cart. Buyer token required"
     cart: Cart
@@ -119,17 +152,17 @@ const typeDefs = gql`
     "get seller by id or using seller token"
     seller(id: ID): Seller
 
-    "get seller's transaction list. seller token required"
-    sellerTransactions: [Transactions]
+    "get seller's order list. seller token required"
+    sellerOrders: [Order]
 
-    "get a seller's transaction using id. seller token required"
-    sellerTransaction(id: ID!): [Transactions]
+    "get a seller's order using id. seller token required"
+    sellerOrder(id: ID!): [Order]
 
-    "get a seller's transaction using id. seller token required"
+    "get a seller's order using id. seller token required"
     sellerProducts: [Product]
 
     "get statistics"
-    sellerTransactionStatistics: [Int]
+    sellerOrderStatistics(start: Date, end: Date): [Int]
 
     #ANOTHER
     "get all categories"
@@ -146,29 +179,33 @@ const typeDefs = gql`
   type Mutation {
     #BUYER
     "buyer login"
-    buyerLogin(email: String, password: String): String
+    loginBuyer(email: String!, password: String!): String
     
     "buyer register"
-    buyerRegister(email: String, password: String): String
+    registerBuyer(input: RegisterBuyerInput!): String
 
     "update buyer profile. buyer token required"
-    updateBuyer(input: UpdateBuyerInput): String
+    updateBuyer(input: UpdateBuyerInput!): String
 
-    "create transaction"
-    createTransaction(itemIds: [ID!]!): String
+    "create order"
+    createOrder(
+      shipping_courier: ShippingCourier!,
+      shipping_address: ShippingAddressInput!, 
+      item_ids: [ID!]!
+    ): Order
 
     #SELLER
     "seller login"
-    sellerLogin(email: String, password: String): String
+    loginSeller(email: String!, password: String!): String
     
-    "buyer register"
-    buyerRegister(email: String, password: String): String
+    "seller register"
+    registerSeller(input: RegisterSellerInput): String
 
     "update seller profile. seller token required"
-    updateSeller(input: UpdateSellerInput): String
+    updateSeller(input: UpdateSellerInput!): String
 
-    "confirm transaction by id or uuid"
-    confirmTransaction(id: ID, uuid: String): String
+    "confirm order by id or uuid"
+    confirmOrder(id: ID, uuid: String): String
 
     "add product"
     addProduct(input: ProductInput!): Product

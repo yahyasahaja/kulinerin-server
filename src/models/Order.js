@@ -2,25 +2,20 @@ import Sequelize from 'sequelize'
 import connection from './connection'
 
 export default connection.define(
-  'Transaction',
+  'Order',
   {
-    total_price: {
-      type: Sequelize.INTEGER.UNSIGNED,
-      allowNull: false,
-      defaultValue: 0
-    },
     status: {
       type: Sequelize.ENUM({
-        values: ['PENDING', 'SHIPPING', 'COMPLETED', 'EXPIRED']
+        values: ['UNPAID', 'PAID', 'PROGRESS', 'COMPLETED', 'EXPIRED']
       }),
       allowNull: false,
-      defaultValue: 'PENDING'
+      defaultValue: 'UNPAID'
     },
     uuid: {
       type: Sequelize.STRING,
       allowNull: false,
       unique: true,
-    }
+    },
     // order_number: {
     //   type: Sequelize.VIRTUAL,
     //   get: async function() {
@@ -37,6 +32,6 @@ export default connection.define(
   },
   {
     underscored: true,
-    timestamps: false
+    timestamps: true
   }
 )

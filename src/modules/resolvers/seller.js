@@ -1,14 +1,15 @@
 import db from '../../models'
+import { USER_TYPE } from '../../config'
 
 export default async (obj, { id }, context) => {
-  if (context.scope.includes('customer')) {
+  if (context.scope.includes('seller')) {
     try {
       if (!id) {
         id = context.user.id
-        if (context.userType !== 'Customer') throw new Error('Permission Denied')
+        if (context.userType !== USER_TYPE.SELLER) throw new Error('Permission Denied')
       }
 
-      return await db.models.Customer.findById(id)
+      return await db.models.Seller.findById(id)
     } catch (error) {
       throw error
     }

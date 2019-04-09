@@ -1,82 +1,49 @@
 import { GraphQLUpload } from 'apollo-upload-server'
+import { GraphQLScalarType } from 'graphql'
+import { Kind } from 'graphql/language'
 
 //MODELS
 import db from '../../models'
 
-import allRestaurants from './allRestaurants'
-import restaurant from './restaurant'
-import allRestaurantMenus from './allRestaurantMenus'
-import restaurantMenu from './restaurantMenu'
-import allOrders from './allOrders'
-import order from './order'
-import allCategories from './allCategories'
+import buyer from './buyer'
+import seller from './seller'
 
-import customerLogin from './customerLogin'
-import customerRegister from './customerRegister'
-import restaurantAdminLogin from './restaurantAdminLogin'
-import addOrderItemsToOrder from './addOrderItemsToOrder'
-import removeOrderItemsFromOrder from './removeOrderItemsFromOrder'
-import replaceOrderItemsInOrder from './replaceOrderItemsInOrder'
-import markOrderAsPaid from './markOrderAsPaid'
+import loginBuyer from './loginBuyer'
+import registerBuyer from './registerBuyer'
+import createOrder from './createOrder'
+import loginSeller from './loginSeller'
+import registerSeller from './registerSeller'
 
 export default {
-  Upload: GraphQLUpload,
-  RestaurantAdmin: {
-    restaurant: async restaurantAdmin => {
-      return await restaurantAdmin.getRestaurant()
-    }
-  },
-  Restaurant: {
-    menus: async restaurant => {
-      // for (let i in restaurant) if (i.indexOf('get') != -1) console.log(i)
-      return await restaurant.getRestaurantMenus()
-    }
-  },
-  RestaurantMenu: {
-    categories: async restaurantMenu => {
-      return await restaurantMenu.getCategories()
-    }
-  },
-  Order: {
-    restaurant: async order => {
-      return await order.getRestaurant()
+  Date: new GraphQLScalarType({
+    name: 'Date',
+    description: 'Date custom scalar type',
+    parseValue(value) {
+      return new Date(value) // value from the client
     },
-    customer: async order => {
-      let customer = await order.getCustomer()
-      if (customer) return customer
-
-      return {
-        id: 0,
-        name: 'Guest',
-        email: ''
+    serialize(value) {
+      return value.getTime() // value sent to the client
+    },
+    parseLiteral(ast) {
+      if (ast.kind === Kind.INT) {
+        return parseInt(ast.value, 10) // ast value is always in string format
       }
+      
+      return null
     },
-    order_items: async order => {
-      return await order.getOrderItems()
-    }
-  },
-  OrderItem: {
-    restaurant_menu: async orderItem => {
-      return await orderItem.getRestaurantMenu()
-    }
-  },
+  }),
+  Upload: GraphQLUpload,
+  
   Query: {
-    allRestaurants,
-    restaurant,
-    allRestaurantMenus,
-    restaurantMenu,
-    allOrders,
-    order,
-    allCategories,
+    buyer,
+    seller,
     uploads: () => db.models.Upload.findAll(),
   },
   Mutation: {
-    customerLogin,
-    customerRegister,
-    restaurantAdminLogin,
-    addOrderItemsToOrder,
-    removeOrderItemsFromOrder,
-    replaceOrderItemsInOrder,
-    markOrderAsPaid
+    loginBuyer,
+    loginSeller,
+    registerBuyer,
+    registerSeller,
+    createOrder,
   }
 }

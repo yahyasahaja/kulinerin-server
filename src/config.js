@@ -29,12 +29,12 @@ export const JWT = {
 }
 
 export const USER_TYPE = {
-  CUSTOMER: 'Customer',
-  RESTAURANT: 'Resto',
+  BUYER: 'Buyer',
+  SELLER: 'Seller',
   GUEST: 'Guest'
 }
 
-export const CUSTOMER_SCOPE = [
+export const BUYER_SCOPE = [
   'allOrders',
   'order',
   'createOrder',
@@ -52,7 +52,7 @@ export const CUSTOMER_SCOPE = [
   'updateCustomer',
 ]
 
-export const RESTAURANT_SCOPE = [
+export const SELLER_SCOPE = [
   'allOrders',
   'order',
   'addOrderItemsToOrder',
@@ -67,6 +67,11 @@ export const RESTAURANT_SCOPE = [
   'markOrderAsPaid',
   'verifyEmail',
 ]
+
+export const SHIPPING_COURIER = {
+  JNE: 'JNE',
+  GRAB: 'GRAB',
+}
 
 export default {
   LOG_MODE,

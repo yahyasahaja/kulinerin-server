@@ -10,6 +10,7 @@ import db from '../models/connection'
 const {
   Buyer,
   Seller,
+  Cart,
 } = db.models
 
 //SEEDS
@@ -20,11 +21,28 @@ import sellers from './sellers'
 export const giveSeeds = async () => {
   let loc
   loc
-  //ADD RESTAURANT SEEDS
+  //ADD RESTAURANT SEEDS 
+  await Cart.destroy({ where: {}, force: true })
   await Buyer.destroy({ where: {}, force: true })
   for (let buyer of buyers)
     buyer.password = await bcrypt.hash(buyer.password, 12)
   loc = await Buyer.bulkCreate(buyers)
+
+  for (let attr in loc[0]) {
+    if (attr.indexOf('get') === 0) {
+      console.log(attr)
+    }
+  }
+  // console.log(loc[0])
+  for (let buyer of loc) await buyer.createCart()
+  let buyer = loc[0]
+  let cart = await buyer.getCart()
+  for (let attr in cart) {
+    if (attr.indexOf('Items') !== -1) {
+      console.log(attr)
+    }
+  }
+  console.log(await cart.getItems())
 
   //ADD RESTAURANT SEEDS
   await Seller.destroy({ where: {}, force: true })

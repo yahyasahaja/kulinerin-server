@@ -1,30 +1,31 @@
 import db from '../../models'
-import { JWT, USER_TYPE } from '../../config'
-import jwt from 'jsonwebtoken'
+// import { SHIPPING_COURIER } from '../../config'
+import uuid from 'uuid/v1'
 
-export default async (obj, { restaurant_id }, { userType, user }) => {
+const {
+  Order,
+  // ShippingAddress,
+  // OrderSeller,
+  // OrderSellerItem,
+} = db.models
+
+export default async (obj, { 
+  shipping_address,
+}, { user, scope }) => {
+  if (!scope.includes('createOrder')) throw new Error('Permission Denied')
+
   try {
-    let order = {
-      restaurant_id
-    }
+    let cart = await user.getCart()
+    // let items = await cart.getItems()
 
-    if (userType === USER_TYPE.CUSTOMER) order.customer_id = user.id
+    let order = { uuid: uuid() }
 
-    order.token = jwt.sign(
-      {
-        scope: [
-          'allOrders',
-          'addOrderItemsToOrder',
-          'removeOrderItemsFromOrder',
-          'replaceOrderItemsInOrder',
-        ],
-        userId: user.id,
-        userType: userType,
-      },
-      JWT.SECRET_KEY
-    )
+    order = await Order.create(order)
+    await order.createShippingAddress(shipping_address)
 
-    return await db.models.Order.create(order)
+    // let orderSeller = 
+    
+    return cart
   } catch (error) {
     throw error
   }
